@@ -47,11 +47,11 @@ public:
 				continue;
 			}
 	
-			Node first, second, third, fourth;
-			first = getNode(i);
-			second = getNode(i + mH);
-			third = getNode(i + mH + 1);
-			fourth = getNode(i + 1);
+			Node * first, * second, * third, * fourth;
+			first = &m_nodes[i];
+			second = &m_nodes[i + mH];
+			third = &m_nodes[i + mH + 1]; 
+			fourth = &m_nodes[i + 1];
 
 			//std::cout << first;
 

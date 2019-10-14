@@ -5,26 +5,27 @@
 #include "Node.h"
 
 class Element {
-	std::vector<Node> m_nodes;
+	std::vector<Node*> m_nodes;
 
 	friend std::ostream& operator<< (std::ostream&, Element&);
 
 public:
-	Element(Node& first, Node& second, Node& third, Node& fourth) {
+	Element(Node first, Node second, Node third, Node fourth) {
+		m_nodes.reserve(4);
+		m_nodes.push_back(&first);
+		m_nodes.push_back(&second);
+		m_nodes.push_back(&third);
+		m_nodes.push_back(&fourth);
+	}
+
+	Element(Node * first, Node * second, Node * third, Node * fourth) {
 		m_nodes.reserve(4);
 		m_nodes.push_back(first);
 		m_nodes.push_back(second);
 		m_nodes.push_back(third);
 		m_nodes.push_back(fourth);
 	}
-
-	Element(std::vector<Node> & vec) {
-		if (vec.size() == 4) {
-			for (auto& node : vec) {
-				m_nodes.push_back(node);
-			}
-		}
-	}
+	
 
 	Element() {
 		m_nodes.reserve(4);
@@ -34,6 +35,6 @@ public:
 	}
 
 	Node getNode(size_t index) {
-		return m_nodes.at(index);
+		return (*m_nodes.at(index));
 	}
 };
