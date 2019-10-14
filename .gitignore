@@ -1,0 +1,10 @@
+.vs/
+AGH_WIMiIP_Metoda_Elementow_Skonczonych/Debug/
+*.tlog
+*.log
+*.obj
+*.enc
+*.idb
+*.pdb
+*.exe
+*.ilk

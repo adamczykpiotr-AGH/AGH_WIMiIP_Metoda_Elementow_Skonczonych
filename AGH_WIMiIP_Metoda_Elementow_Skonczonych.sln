@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AGH_WIMiIP_Metoda_Elementow_Skonczonych", "AGH_WIMiIP_Metoda_Elementow_Skonczonych\AGH_WIMiIP_Metoda_Elementow_Skonczonych.vcxproj", "{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Debug|x64.ActiveCfg = Debug|x64
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Debug|x64.Build.0 = Debug|x64
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Debug|x86.ActiveCfg = Debug|Win32
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Debug|x86.Build.0 = Debug|Win32
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Release|x64.ActiveCfg = Release|x64
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Release|x64.Build.0 = Release|x64
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Release|x86.ActiveCfg = Release|Win32
+		{0CB4F919-EF05-420F-A6C9-9C56D73BAB3E}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CBB0A27E-9EFC-46A4-8A8E-3A5C15FA278C}
+	EndGlobalSection
+EndGlobal
