@@ -8,3 +8,5 @@ AGH_WIMiIP_Metoda_Elementow_Skonczonych/Debug/
 *.pdb
 *.exe
 *.ilk
+x64/Release/AGH_WIMiIP_Metoda_Elementow_Skonczonych.iobj
+x64/Release/AGH_WIMiIP_Metoda_Elementow_Skonczonych.ipdb
