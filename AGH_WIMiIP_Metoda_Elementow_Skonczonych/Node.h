@@ -8,7 +8,7 @@ class Node {
 	double m_temp;
 	uint16_t m_boundaryCondition;
 
-	friend std::ostream& operator<< (std::ostream&, Node&);
+	friend std::ostream& operator<< (std::ostream&, Node);
 
 public:
 	Node(uint64_t x, uint64_t y, uint16_t boundaryCondition = 0) {

@@ -26,7 +26,7 @@ public:
 		//Fill Nodes and set BC
 		for (uint64_t i = 0; i < data.getMW(); i++) {
 
-			uint64_t x = floor(i / mH);
+			uint64_t x = static_cast<uint64_t>(floor(i / mH));
 			uint64_t y = i % mH;
 			uint16_t boundaryCondition = 0;
 

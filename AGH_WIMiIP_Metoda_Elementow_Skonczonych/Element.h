@@ -7,7 +7,7 @@
 class Element {
 	std::vector<Node*> m_nodes;
 
-	friend std::ostream& operator<< (std::ostream&, Element&);
+	friend std::ostream& operator<< (std::ostream&, Element);
 
 public:
 	Element(Node first, Node second, Node third, Node fourth) {

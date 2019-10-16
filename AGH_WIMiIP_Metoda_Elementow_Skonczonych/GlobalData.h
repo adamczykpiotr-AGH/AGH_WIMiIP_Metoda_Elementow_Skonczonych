@@ -23,7 +23,8 @@ public:
 	}
 
 	GlobalData() {
-		m_height = m_length = m_mH = m_mL = m_mW = m_mE = 0;
+		m_height = m_length = 0.;
+		m_mH = m_mL = m_mW = m_mE = 0;
 	}
 
 	~GlobalData() {

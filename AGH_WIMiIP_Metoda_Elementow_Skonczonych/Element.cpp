@@ -1,6 +1,6 @@
 #include "Element.h"
 
-std::ostream& operator<<(std::ostream& input, Element& element) {
+std::ostream& operator<<(std::ostream& input, Element element) {
 	input << "Element:\n\n";
 
 	input << " (" << element.getNode(3).getX() << ";" << element.getNode(3).getY() << ") ------ (" << element.getNode(2).getX() << ";" << element.getNode(2).getY() << ")\n\n";
