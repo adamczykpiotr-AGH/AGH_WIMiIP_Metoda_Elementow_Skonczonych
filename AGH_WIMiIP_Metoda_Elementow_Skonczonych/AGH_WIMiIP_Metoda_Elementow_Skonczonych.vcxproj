@@ -156,12 +156,14 @@
     <ClCompile Include="GlobalData.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Numeric.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Element.h" />
     <ClInclude Include="GlobalData.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="Numeric.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
