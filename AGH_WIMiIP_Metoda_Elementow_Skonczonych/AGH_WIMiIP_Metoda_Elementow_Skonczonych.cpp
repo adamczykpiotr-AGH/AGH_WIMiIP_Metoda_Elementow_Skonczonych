@@ -7,8 +7,7 @@
 
 int main() {
 
-	GlobalData global(1.5, 0.5, 6, 4);
-	std::cout << global;
+	GlobalData global({ 1.5, 0.5 }, { 6, 4 }, { 0., 0. }, { 14., 0.1 }, {0.1, 0.2, 0.3, 0.4});
 
 	Grid grid(global);
 	std::cout << grid;

@@ -27,9 +27,6 @@
     <ClCompile Include="Grid.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalData.cpp">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
     <ClCompile Include="Numeric.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
