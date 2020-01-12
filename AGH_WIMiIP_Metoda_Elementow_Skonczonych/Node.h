@@ -1,20 +1,22 @@
 #pragma once
 #include <cstdint>	//uint64_t define
 #include <ostream>	//std::ostream
+#include <iomanip>
+#include <iostream>
 
 class Node {
-	uint64_t m_x;
-	uint64_t m_y;
+	double m_x;
+	double m_y;
 	double m_temp;
 	uint16_t m_boundaryCondition;
 
 	friend std::ostream& operator<< (std::ostream&, Node);
 
 public:
-	Node(uint64_t x, uint64_t y, uint16_t boundaryCondition = 0) {
+	Node(double x, double y, double temp, uint16_t boundaryCondition = 0) {
 		m_x = x;
 		m_y = y;
-		m_temp = .0;
+		m_temp = temp;
 		m_boundaryCondition = boundaryCondition;
 	}
 
@@ -27,11 +29,11 @@ public:
 	~Node() {
 	}
 
-	uint64_t getX() {
+	double getX() {
 		return m_x;
 	}
 
-	uint64_t getY() {
+	double getY() {
 		return m_y;
 	}
 
