@@ -20,6 +20,7 @@ public:
 		m_nodes.push_back(&third);
 		m_nodes.push_back(&fourth);
 		m_nodeOrder = nodeOrder;
+		m_edgeBCCount = 0;
 	}
 
 	Element(Node * first, Node * second, Node * third, Node * fourth, std::array<uint64_t, 4> nodeOrder) {
@@ -29,11 +30,13 @@ public:
 		m_nodes.push_back(third);
 		m_nodes.push_back(fourth);
 		m_nodeOrder = nodeOrder;
+		m_edgeBCCount = 0;
 	}
 	
 	Element() {
 		m_nodes.reserve(4);
 		m_nodeOrder = { 0,0,0,0 };
+		m_edgeBCCount = 0;
 	}
 
 	~Element() {
