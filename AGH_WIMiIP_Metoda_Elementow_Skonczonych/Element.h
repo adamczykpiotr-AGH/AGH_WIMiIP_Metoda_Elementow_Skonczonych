@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <cassert>
 
 #include "Node.h"
 
@@ -50,10 +51,6 @@ public:
 		return m_edgeBCCount;
 	}
 
-	std::array<uint64_t, 4> getNodeOrder() {
-		return m_nodeOrder;
-	}
-
 	uint64_t getNodeIndex(size_t localIndex) {
 		return m_nodeOrder.at(localIndex);
 	}
@@ -62,12 +59,12 @@ public:
 		return m_edgeBoundaryConditions;
 	}
 	
-	void updateEdgeList(uint64_t index, uint64_t value) {
+	void setEdgeListValue(uint64_t index, uint64_t value) {
 		m_edgeBoundaryConditions.at(index) = value;
 	}
 
-	void setEdgeCount(uint64_t count) {
-		m_edgeBCCount = count;
+	void incrementEdgeCount() {
+		assert(m_edgeBCCount < 4);
+		m_edgeBCCount++;
 	}
-
 };
