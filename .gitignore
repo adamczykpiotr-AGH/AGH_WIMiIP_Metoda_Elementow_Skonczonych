@@ -1,5 +1,6 @@
 .vs/
 AGH_WIMiIP_Metoda_Elementow_Skonczonych/Debug/
+AGH_WIMiIP_Metoda_Elementow_Skonczonych/Release/
 *.tlog
 *.log
 *.obj
@@ -8,7 +9,5 @@ AGH_WIMiIP_Metoda_Elementow_Skonczonych/Debug/
 *.pdb
 *.exe
 *.ilk
-x64/Release/AGH_WIMiIP_Metoda_Elementow_Skonczonych.iobj
-x64/Release/AGH_WIMiIP_Metoda_Elementow_Skonczonych.ipdb
-x64/Release/AGH_WIMiIP_Metoda_Elementow_Skonczonych.ipdb
-x64/Release/AGH_WIMiIP_Metoda_Elementow_Skonczonych.iobj
+*.iobj
+*.ipdb
