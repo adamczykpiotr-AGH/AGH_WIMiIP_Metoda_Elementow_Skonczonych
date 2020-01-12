@@ -1,6 +1,4 @@
 #pragma once
-#include <string>	//std::string
-#include <ostream>	//std::ostream
 #include <array>
 
 class GlobalData {
