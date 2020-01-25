@@ -33,9 +33,6 @@
     <ClCompile Include="Jacobian.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
     <ClCompile Include="Surface.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
