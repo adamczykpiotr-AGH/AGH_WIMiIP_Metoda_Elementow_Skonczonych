@@ -16,6 +16,6 @@ public:
 	static void gaussianElimimationWorker(size_t start, size_t end, std::vector<std::vector<double>>* matrixPtr, size_t matrixSize);
 
 	template <typename T>
-	static std::pair<T, T> findMinMax(std::vector<T> & vec);
+	static std::pair<T, T> findMinMax(const std::vector<T> & vec);
 
 };

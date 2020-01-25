@@ -1,11 +1,9 @@
 #pragma once
 #include <array>
 
-class IntegrationPoint {
-public:
-	double ksi;
-	double eta;
-};
+#define Point std::pair<double, double>
+#define ksi first
+#define eta second
 
 class UniversalElement {
 
@@ -13,7 +11,7 @@ class UniversalElement {
 	std::array<std::array<double, 4>, 4> m_KsiMatrix;
 	std::array<std::array<double, 4>, 4> m_EtaMatrix;
 
-	std::array<IntegrationPoint, 4> m_integrationPoints;
+	std::array<Point, 4> m_integrationPoints;
 	std::array<double, 4> m_integrationPointsWeights;
 
 	std::array<std::array<double, 4>, 4> m_shapeFunctionValues;

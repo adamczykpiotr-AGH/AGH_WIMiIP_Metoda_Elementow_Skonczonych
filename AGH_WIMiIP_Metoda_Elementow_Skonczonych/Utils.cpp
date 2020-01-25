@@ -83,7 +83,7 @@ void Utils::gaussianElimimationWorker(size_t start, size_t end, std::vector<std:
 }
 
 template<typename T>
-inline std::pair<T, T> Utils::findMinMax(std::vector<T>& vec) {
+inline std::pair<T, T> Utils::findMinMax(const std::vector<T>& vec) {
 
 	if (vec.size() == 0) {
 		return std::make_pair<T, T>(0, 0);
