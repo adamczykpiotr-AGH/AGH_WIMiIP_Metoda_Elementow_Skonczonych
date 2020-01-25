@@ -7,12 +7,12 @@ UniversalElement::UniversalElement() {
 	m_integrationPoints.at(0).eta = -val;
 
 	m_integrationPoints.at(1).ksi = -val;
-	m_integrationPoints.at(1).eta = val;
+	m_integrationPoints.at(1).eta =  val;
 
-	m_integrationPoints.at(2).ksi = val;
-	m_integrationPoints.at(2).eta = val;
+	m_integrationPoints.at(2).ksi =  val;
+	m_integrationPoints.at(2).eta =  val;
 
-	m_integrationPoints.at(3).ksi = val;
+	m_integrationPoints.at(3).ksi =  val;
 	m_integrationPoints.at(3).eta = -val;
 
 	double ksi, eta;
@@ -22,20 +22,20 @@ UniversalElement::UniversalElement() {
 		eta = m_integrationPoints.at(i).eta;
 		ksi = m_integrationPoints.at(i).ksi;
 
-		m_shapeFunctionValues[i][0] =  0.25 * (1 - eta) * (1 - ksi);
-		m_EtaMatrix[i][0]			= -0.25 * (1 - ksi);
-		m_KsiMatrix[i][0]			= -0.25 * (1 - eta);
+		m_shapeFunctionValues.at(i).at(0)	=  0.25 * (1 - eta) * (1 - ksi);
+		m_EtaMatrix.at(i).at(0)				= -0.25 * (1 - ksi);
+		m_KsiMatrix.at(i).at(0)				= -0.25 * (1 - eta);
 
-		m_shapeFunctionValues[i][3] =  0.25 * (1 + eta) * (1 - ksi);
-		m_EtaMatrix[i][3]			=  0.25 * (1 - ksi);
-		m_KsiMatrix[i][3]			= -0.25 * (1 + eta);
+		m_shapeFunctionValues.at(i).at(3)	=  0.25 * (1 + eta) * (1 - ksi);
+		m_EtaMatrix.at(i).at(3)				=  0.25 * (1 - ksi);
+		m_KsiMatrix.at(i).at(3)				= -0.25 * (1 + eta);
 
-		m_shapeFunctionValues[i][2] =  0.25 * (1 + eta) * (1 + ksi);
-		m_EtaMatrix[i][2]			=  0.25 * (1 + ksi);
-		m_KsiMatrix[i][2]			=  0.25 * (1 + eta);
+		m_shapeFunctionValues.at(i).at(2)	=  0.25 * (1 + eta) * (1 + ksi);
+		m_EtaMatrix.at(i).at(2)				=  0.25 * (1 + ksi);
+		m_KsiMatrix.at(i).at(2)				=  0.25 * (1 + eta);
 
-		m_shapeFunctionValues[i][1] =  0.25 * (1 - eta) * (1 + ksi);
-		m_EtaMatrix[i][1]			= -0.25 * (1 + ksi);
-		m_KsiMatrix[i][1]			=  0.25 * (1 - eta);
+		m_shapeFunctionValues.at(i).at(1)	 =  0.25 * (1 - eta) * (1 + ksi);
+		m_EtaMatrix.at(i).at(1)				= -0.25 * (1 + ksi);
+		m_KsiMatrix.at(i).at(1)				=  0.25 * (1 - eta);
 	}
 }
