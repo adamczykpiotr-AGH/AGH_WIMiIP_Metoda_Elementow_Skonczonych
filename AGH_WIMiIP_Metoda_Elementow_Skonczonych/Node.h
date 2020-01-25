@@ -10,8 +10,6 @@ class Node {
 	double m_temp;
 	uint16_t m_boundaryCondition;
 
-	friend std::ostream& operator<< (std::ostream&, Node);
-
 public:
 	Node(double x, double y, double temp, uint16_t boundaryCondition = 0) {
 		m_x = x;
