@@ -159,25 +159,25 @@ void Grid::compute(std::pair<bool, bool> settings) {
 	//Printing matrices
 	if (std::get<1>(settings)) {
 
-		printf("\nC Matrix (.at(C))\n");
+		printf("\nC Matrix ([C])\n");
 		for (int a = 0; a < 16; a++) {
 			for (int b = 0; b < 16; b++) {
-				printf("%.3f\t", m_globalCMatrix.at(a).at(b));
+				printf("%08.3f  ", m_globalCMatrix.at(a).at(b));
 			}
 			printf("\n");
 		}
 
-		printf("H Matrix (.at(H)+.at(C)/dT)\n");
+		printf("\nH Matrix ([H]+[C]/dT)\n");
 		for (int a = 0; a < 16; a++) {
 			for (int b = 0; b < 16; b++) {
-				printf("%.3f\t", m_globalHMatrix.at(a).at(b));
+				printf("%08.3f  ", m_globalHMatrix.at(a).at(b));
 			}
 			printf("\n");
 		}
 
 		printf("\nVector ({P})\n");
 		for (int a = 0; a < 16; a++) {
-			printf("%.3f\t", m_globalPVector.at(a));
+			printf("%08.3f  ", m_globalPVector.at(a));
 		}
 		printf("\n");
 	}

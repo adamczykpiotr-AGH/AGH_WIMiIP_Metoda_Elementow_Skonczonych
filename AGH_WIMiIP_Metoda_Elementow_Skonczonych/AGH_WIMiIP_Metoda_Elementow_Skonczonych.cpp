@@ -6,8 +6,8 @@ constexpr auto siliconWaferTest = 1;
 constexpr auto testCase1		= 2;
 constexpr auto testCase2		= 3;
 
-constexpr auto displayGrid		= false;
-constexpr auto displayMatrices	= false;
+constexpr auto displayGrid		= true;
+constexpr auto displayMatrices	= true;
 
 int main() {
 	std::pair<bool, bool> settings = { displayGrid, displayMatrices };
