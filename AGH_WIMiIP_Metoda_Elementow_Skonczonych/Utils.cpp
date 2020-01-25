@@ -1,93 +1,85 @@
 #include "Utils.h"
 
-void Utils::solver(GlobalData data, Grid grid){
+void Utils::solver(GlobalData data, Grid & grid, std::pair<bool, bool> settings){
 
 	unsigned int steps = static_cast<unsigned int>(data.getTimeDuration() / data.getTimeStep());
 	double timePassed = 0.;
 
 	for (unsigned int i = 0; i < steps; i++) {
+		auto t = new Timer("Loop");
 		timePassed += data.getTimeStep();
-		if(verboseSolver) printf("Iteration [%u] after %0.1lf s.\n", i, timePassed);
+		printf("Iteration .at(%u) after %0.1lf s.\n", i, timePassed);
 
 		//Calculate global matrices H, C and P vector
-		grid.compute();
+		grid.compute(settings);
 
 		//Solve equasion
-		std::vector<double> temps = Utils::gaussianElimination(grid.getGlobalHMatrix(), grid.getGlobalPVector());
-		
+		std::vector<double> temps(grid.getGlobalHMatrixPtr()->size(), 0);
+		Utils::gaussianElimination(grid.getGlobalHMatrixPtr(), grid.getGlobalPVectorPtr(), &temps);
+
 		//Set calculated temperature for each node
-		for (uint64_t j = 0; j < 16; j++) {
-			grid.setNodeTemp(j, temps[j]);
+		for (uint64_t j = 0; j < data.getMW(); j++) {
+			grid.setNodeTemp(j, temps.at(j));
 		}
 
-		for (int k = 0; k < data.getMH(); k++) {
-			for (int l = 0; l < data.getML(); l++) {
-				printf("%0.3lf\t\t", temps[k * data.getML() + l]);
+		if (std::get<0>(settings)) {
+			for (uint64_t k = 0; k < data.getMH(); k++) {
+				for (uint64_t l = 0; l < data.getML(); l++) {
+					printf("%0.3lf\t\t", temps.at(k * data.getML() + l));
+				}
+				printf("\n");
 			}
-			printf("\n");
 		}
 
 		std::tuple<double, double> minMax = Utils::findMinMax(temps);
+		delete t;
 		printf("Min: %0.3lf\t\t", std::get<0>(minMax));
 		printf("Max: %0.3lf\n\n", std::get<1>(minMax));
-
-
 	}
 }
 
-//taken from https://github.com/adamczykpiotr/AGH_WIMiIP_Metody_Numeryczne
-std::vector<double> Utils::gaussianElimination(std::vector<std::vector<double>> hc, std::vector<double> p) {
+void Utils::gaussianElimination(std::vector<std::vector<double>>* hc, std::vector<double>* p, std::vector<double>* result) {
 
-	std::vector<std::vector<double>> matrix = hc;
-
-	//Add p vector as a last column in hc matrix
-	for (int i = 0; i < hc.size(); i++) {
-		matrix[i].push_back(p[i]);
+	//.at(HC) += {P}
+	size_t matrixSize = hc->size();
+	for (int i = 0; i < matrixSize; i++) {
+		(*hc).at(i).push_back((*p).at(i));
 	}
 
-	unsigned int matrixSize = matrix.size();
-	unsigned int matrixCols = matrix[0].size();
-	unsigned int startPos = 0;
-	std::vector<double> coefficients;
-	coefficients.reserve(matrixSize);
+	//Eliminatinon
+	auto t1 = new Timer("Gaussian elimination");
+	gaussianElimimationWorker(0, matrixSize, hc, matrixSize);
+	delete t1;
 
-	//Triangulate matrix
-	while (coefficients.size() < 1) {
+	//Generating result vector
+	for (int i = matrixSize - 1; i >= 0; i--) {
+		(*result).at(i) = (*hc).at(i).at(matrixSize);
 
-		for (unsigned int i = startPos + 1; i < matrixSize; i++) {
-			double coeff = matrix[i][startPos] / matrix[startPos][startPos];
-			for (unsigned int j = startPos; j < matrix[i].size(); j++) {
-				matrix[i][j] -= matrix[startPos][j] * coeff;
+		for (int j = i + 1; j < matrixSize; j++) {
+			if (j != i) {
+				(*result).at(i) = (*result).at(i) - (*hc).at(i).at(j) * (*result).at(j);
 			}
 		}
 
-		//If last row has only 1 coefficient, push value to vector thus end loop
-		if (matrix[matrixSize - 1][matrixCols - 3] == 0) {
-			double xn = matrix[matrixSize - 1][matrixCols - 1] / matrix[matrixSize - 1][matrixCols - 2];
-			coefficients.push_back(xn);
+		(*result).at(i) = (*result).at(i) / (*hc).at(i).at(i);
+	}	
+}
+
+void Utils::gaussianElimimationWorker(size_t start, size_t end, std::vector<std::vector<double>>* matrixPtr, size_t matrixSize) {
+
+	for (size_t i = start; i < end; i++) {
+
+		for (size_t k = i + 1; k < matrixSize; k++) {
+
+			if ((*matrixPtr).at(k).at(i) == 0) continue;
+
+			double coefficient = (*matrixPtr).at(k).at(i) / (*matrixPtr).at(i).at(i);
+			
+			for (size_t j = 0; j <= matrixSize; j++) {
+				(*matrixPtr).at(k).at(j) -= coefficient * (*matrixPtr).at(i).at(j);
+			}
 		}
-		startPos++;
 	}
-
-	//Start searching for other coefficients
-	unsigned int coefficientsSize = coefficients.size();
-	while (coefficientsSize < matrixSize) {
-		double xn = matrix[matrixSize - coefficientsSize - 1][matrixCols - 1];
-		for (unsigned int i = 0; i < coefficientsSize; i++) {
-			xn -= matrix[matrixSize - coefficientsSize - 1][matrixCols - 2 - i] * coefficients[i];
-		}
-		xn /= matrix[matrixSize - coefficientsSize - 1][matrixCols - coefficientsSize - 2];
-		coefficients.push_back(xn);
-		coefficientsSize = coefficients.size();
-	}
-
-	//Reverse vector
-	std::vector<double> ret;
-	for (unsigned int i = 0; i < matrixSize; i++) {
-		ret.push_back(coefficients[matrixSize - 1 - i]);
-	}
-
-	return ret;
 }
 
 template<typename T>
