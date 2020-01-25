@@ -2,7 +2,7 @@
 #include "UniversalElement.h"
 #include <iostream>
 
-Jacobian::Jacobian(std::array<double, 4> x, std::array<double, 4> y, int point, UniversalElement element) {
+Jacobian::Jacobian(std::array<double, 4> x, std::array<double, 4> y, size_t point, UniversalElement element) {
 
 	double dX_dKsi =
 		  x[0] * element.getKsiValue(point, 0)

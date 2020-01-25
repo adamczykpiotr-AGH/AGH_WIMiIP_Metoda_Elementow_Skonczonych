@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+
 #include "UniversalElement.h"
 
 class Jacobian {
@@ -10,7 +11,7 @@ class Jacobian {
 
 public:
 
-	Jacobian(std::array<double, 4> x, std::array<double, 4> y, int pointId, UniversalElement element);
+	Jacobian(std::array<double, 4> x, std::array<double, 4> y, size_t pointId, UniversalElement element);
 
 	double getJacobianValue(size_t i, size_t j) {
 		return m_data.at(i).at(j);
