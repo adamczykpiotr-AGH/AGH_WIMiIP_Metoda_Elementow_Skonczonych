@@ -18,7 +18,7 @@ UniversalElement::UniversalElement() {
 	double ksi, eta;
 
 	//Calculating derrivatives of shape functions against ksi/eta for each integration point
-	for (int i = 0; i < 4; i++) {
+	for (size_t i = 0; i < 4; i++) {
 		eta = m_integrationPoints.at(i).eta;
 		ksi = m_integrationPoints.at(i).ksi;
 
