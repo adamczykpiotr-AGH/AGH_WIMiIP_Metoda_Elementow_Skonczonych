@@ -8,7 +8,7 @@ void Utils::solver(GlobalData data, Grid & grid, std::pair<bool, bool> settings)
 	for (unsigned int i = 0; i < steps; i++) {
 		auto t = new Timer("Loop");
 		timePassed += data.getTimeStep();
-		printf("Iteration .at(%u) after %0.1lf s.\n", i, timePassed);
+		printf("Iteration [%lu] after %0.1lf s.\n", i, timePassed);
 
 		//Calculate global matrices H, C and P vector
 		grid.compute(settings);
