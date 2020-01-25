@@ -1,7 +1,8 @@
 #pragma once
 #include <array>
 
-struct IntegrationPoint {
+class IntegrationPoint {
+public:
 	double ksi;
 	double eta;
 };

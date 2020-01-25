@@ -2,7 +2,6 @@
 #include <iterator>
 
 #include "Grid.h"
-#include "Numeric.h"
 #include "Utils.h"
 #include "Timer.h"
 
