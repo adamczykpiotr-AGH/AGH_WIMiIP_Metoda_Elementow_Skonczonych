@@ -1,7 +1,4 @@
-﻿#include <iostream>
-#include <iterator>
-
-#include "Grid.h"
+﻿#include "Grid.h"
 #include "Utils.h"
 #include "Timer.h"
 
