@@ -2,6 +2,10 @@
 
 GlobalData Grid::m_data;
 
+std::vector<double> Grid::m_globalPVector;
+std::vector<std::vector<double>> Grid::m_globalHMatrix;
+std::vector<std::vector<double>> Grid::m_globalCMatrix;
+
 Grid::Grid(GlobalData data) {
 	m_elements.reserve(static_cast<size_t>(data.getME()));
 	m_nodes.reserve(static_cast<size_t>(data.getMW()));
@@ -51,10 +55,10 @@ Grid::Grid(GlobalData data) {
 		std::array<uint64_t, 4> nodeOrder = { i, i + mH, i + mH + 1, i + 1 };
 
 		Node* first, * second, * third, * fourth;
-		first  = &m_nodes[nodeOrder[0]];
-		second = &m_nodes[nodeOrder[1]];
-		third  = &m_nodes[nodeOrder[2]];
-		fourth = &m_nodes[nodeOrder[3]];
+		first  = &m_nodes.at(nodeOrder.at(0));
+		second = &m_nodes.at(nodeOrder.at(1));
+		third  = &m_nodes.at(nodeOrder.at(2));
+		fourth = &m_nodes.at(nodeOrder.at(3));
 
 		std::array<uint16_t, 4> nodeBCs = { first->getBoundaryCondition(), second->getBoundaryCondition(), third->getBoundaryCondition(), fourth->getBoundaryCondition() };
 			   
@@ -63,45 +67,45 @@ Grid::Grid(GlobalData data) {
 		//Compute edge list:
 
 		//Bottom
-		if (nodeBCs[0] == 1 && nodeBCs[1] == 1) {
+		if (nodeBCs.at(0) == 1 && nodeBCs.at(1) == 1) {
 			if (el.getEdgeCount() == 0) {
-				el.setEdgeListValue(0, 1);
+				el.setEdgeListValue(0, surfaceBottom);
 				el.incrementEdgeCount();
 			} else {
-				el.setEdgeListValue(1, 1);
+				el.setEdgeListValue(1, surfaceBottom);
 				el.incrementEdgeCount();
 			}
 		}
 		
 		//Right
-		if (nodeBCs[1] == 1 && nodeBCs[2] == 1) {
+		if (nodeBCs.at(1) == 1 && nodeBCs.at(2) == 1) {
 			if (el.getEdgeCount() == 0) {
-				el.setEdgeListValue(0, 2);
+				el.setEdgeListValue(0, surfaceRight);
 				el.incrementEdgeCount();
 			} else {
-				el.setEdgeListValue(1, 2);
+				el.setEdgeListValue(1, surfaceRight);
 				el.incrementEdgeCount();
 			}
 		}
 
 		//Top
-		if (nodeBCs[2] == 1 && nodeBCs[3] == 1) {
+		if (nodeBCs.at(2) == 1 && nodeBCs.at(3) == 1) {
 			if (el.getEdgeCount() == 0) {
-				el.setEdgeListValue(0, 3);
+				el.setEdgeListValue(0, surfaceTop);
 				el.incrementEdgeCount();
 			} else {
-				el.setEdgeListValue(1, 3);
+				el.setEdgeListValue(1, surfaceTop);
 				el.incrementEdgeCount();
 			}
 		}
 
 		//Left
-		if (nodeBCs[3] == 1 && nodeBCs[0] == 1) {
+		if (nodeBCs.at(3) == 1 && nodeBCs.at(0) == 1) {
 			if (el.getEdgeCount() == 0) {
-				el.setEdgeListValue(0, 4);
+				el.setEdgeListValue(0, surfaceLeft);
 				el.incrementEdgeCount();
 			} else {
-				el.setEdgeListValue(1, 4);
+				el.setEdgeListValue(1, surfaceLeft);
 				el.incrementEdgeCount();
 			}
 		}
@@ -112,356 +116,182 @@ Grid::Grid(GlobalData data) {
 	m_data = data; 
 }
 
+void Grid::compute(std::pair<bool, bool> settings) {
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	size_t newSize = m_data.getMH() * m_data.getML();
 
+	//Set all {P} values to 0.
+	m_globalPVector.resize(newSize);
+	for (auto& value : m_globalPVector) {
+		value = 0.;
+	}
 
+	//Set all [C] values to 0.
+	m_globalCMatrix.resize(newSize);
+	for (auto& vector : m_globalCMatrix) {
+		vector.resize(newSize);
+		for (auto& value : vector) {
+			value = 0.;
+		}
+	}
 
-void Grid::compute() {
+	//Set all [H] values to 0.
+	m_globalHMatrix.resize(newSize);
+	for (auto& vector : m_globalHMatrix) {
+		vector.resize(newSize);
+		for (auto& value : vector) {
+			value = 0.;
+		}
+	}
+	
+	//Compute
+	computeWorker(0, m_elements.size(), this, &m_data);
 
-	double heatCapacity = m_data.getMaterialHeatCapacity();
-	double density = m_data.getMaterialDensity();
+	//[H] = [H] + [C]/dT
+	double timeStep = m_data.getTimeStep();
 
-	double conductivityCoefficient = m_data.getMaterialConductivityCoefficient();
+	for (size_t i = 0; i < m_globalHMatrix.size(); i++) {
+		for (size_t j = 0; j < m_globalHMatrix.size(); j++) {
+			m_globalHMatrix.at(i).at(j) += m_globalCMatrix.at(i).at(j) / timeStep;
+		}
+	}
+
+	//Printing matrices
+	if (std::get<1>(settings)) {
+
+		printf("\nC Matrix (.at(C))\n");
+		for (int a = 0; a < 16; a++) {
+			for (int b = 0; b < 16; b++) {
+				printf("%.3f\t", m_globalCMatrix.at(a).at(b));
+			}
+			printf("\n");
+		}
+
+		printf("H Matrix (.at(H)+.at(C)/dT)\n");
+		for (int a = 0; a < 16; a++) {
+			for (int b = 0; b < 16; b++) {
+				printf("%.3f\t", m_globalHMatrix.at(a).at(b));
+			}
+			printf("\n");
+		}
+
+		printf("\nVector ({P})\n");
+		for (int a = 0; a < 16; a++) {
+			printf("%.3f\t", m_globalPVector.at(a));
+		}
+		printf("\n");
+	}
+}
+
+void Grid::computeWorker(size_t start, size_t end, Grid* gridPtr, GlobalData* dataPtr) {
+
+	Grid grid = *(gridPtr);
+	GlobalData m_data = *(dataPtr);
 
 	double timeStep = m_data.getTimeStep();
 
-	double heatExchangeCoefficient = m_data.getMaterialHeatExchangeCoefficient();
 	double ambientTemperature = m_data.getAmbientTemp();
 
-	UniversalElement* uElem = new UniversalElement();
+	double conductivityCoefficient = m_data.getMaterialConductivityCoefficient();
+	double heatExchangeCoefficient = m_data.getMaterialHeatExchangeCoefficient();
 
-	UniversalElement universal;
+	double Q = m_data.getMaterialHeatCapacity() * m_data.getMaterialDensity();
+	UniversalElement universalElement;
 
-	//Setting up global matrices and vector
-	size_t newSize = m_data.getMH();
-	newSize *= m_data.getML();
+	for (size_t i = start; i < end; i++) {
 
-	//Global P vector
-	m_globalPVector.resize(newSize);
-	for (size_t i = 0; i < newSize; i++) {
-		m_globalPVector[i] = 0.;
-	}
+		Element localElement = grid.getElement(i);
 
-	//Global H matrix
-	m_globalHMatrix.resize(newSize);
-	for (size_t i = 0; i < newSize; i++) {
-		m_globalHMatrix[i].resize(newSize);
-		for (size_t j = 0; j < newSize; j++) {
-			m_globalHMatrix[i][j] = 0.;
+		std::array<double, 4> dN_dX;
+		std::array<double, 4> dN_dY;
+
+		std::array<double, 4> coordX;
+		std::array<double, 4> coordY;
+
+		std::array<double, 4> initialTemps;
+		
+		//Local [H], [C] and {P}
+		std::array<std::array<double, 4>, 4> localHMatrix = { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. };
+		std::array<std::array<double, 4>, 4> localCMatrix = { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. };
+		std::array<double, 4>				 localPVector = { 0. ,0., 0., 0. };
+
+		//Get all nodes parameters from element
+		for (size_t i = 0; i < 4; i++) {
+			uint64_t nodeIndex = localElement.getNodeIndex(i);
+			Node localNode = grid.getNode(nodeIndex);
+			coordX.at(i) = localNode.getX();
+			coordY.at(i) = localNode.getY();
+			initialTemps.at(i) = localNode.getTemp();
 		}
-	}
 
-	// Global C matrix
-	m_globalCMatrix.resize(newSize);
-	for (size_t i = 0; i < newSize; i++) {
-		m_globalCMatrix[i].resize(newSize);
-		for (size_t j = 0; j < newSize; j++) {
-			m_globalCMatrix[i][j] = 0.;
-		}
-	}
+		for (size_t i = 0; i < 4; i++) {
+			Jacobian jacobian = Jacobian(coordX, coordY, i, universalElement);
+			double det = jacobian.getDeterminant();
+		
+			double temperature = 0.;
+			for (size_t j = 0; j < 4; j++) {
 
-	//XDDDDDDDDDDDDDD
-#ifdef para
-	for (Element& localElement : m_elements) {
-#endif // para
-#ifndef para
-		concurrency::parallel_for_each(m_elements.begin(), m_elements.end(), [heatCapacity, density, conductivityCoefficient, timeStep, heatExchangeCoefficient, ambientTemperature, this, uElem](Element& localElement) {
-#endif // !para
+				//Convert to local coordinate system
+				dN_dX.at(j) = jacobian.getInvertedJacobianValue(0, 0) * universalElement.getKsiValue(i, j)
+							+ jacobian.getInvertedJacobianValue(0, 1) * universalElement.getEtaValue(i, j);
 
+				dN_dY.at(j) = jacobian.getInvertedJacobianValue(1, 0) * universalElement.getKsiValue(i, j)
+							+ jacobian.getInvertedJacobianValue(1, 1) * universalElement.getEtaValue(i, j);
 
-
-
-			std::array<double, 4> coordX;
-			std::array<double, 4> coordY;
-
-			double dNdx[4];
-			double dNdy[4];
-
-			double initialTemp[4];
-			double tempInt = 0.;
-			double det = 0.;
-
-			//Local H matrix, P vector and C matrix
-			std::array<std::array<double, 4>, 4> hLocal = { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. };
-			std::array<std::array<double, 4>, 4> hsLocal = { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. };
-			std::array<std::array<double, 4>, 4> cLocal = { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. };
-			std::array<double, 4> pLocal = { 0. ,0., 0., 0. };
-
-
-			// Gets all nodes parameters from element
-			for (int j = 0; j < 4; j++) {
-				uint64_t nodeIndex = localElement.getNodeIndex(j);
-				Node localNode = getNode(nodeIndex);
-				coordX[j] = localNode.getX();
-				coordY[j] = localNode.getY();
-				initialTemp[j] = localNode.getTemp();
+				//Interpolate temperature using functional
+				temperature += initialTemps.at(j) * universalElement.getShapeFunctionValue(j, i);
 			}
 
-			// Tworzy macierze jakobiego i wyznacza pochodne funkcji ksztaltu po x/y + interpolacja temp
-			// J - punkt calkowania
-			for (int j = 0; j < 4; j++) {
-				Jacobian jacobian = Jacobian(coordX, coordY, j, *uElem);
-				tempInt = 0.;
-				for (int k = 0; k < 4; k++) {
+			double temperatureOverTimeStep = temperature / timeStep;
 
-					dNdx[k] = jacobian.getInvertedJacobianValue(0, 0) * uElem->getKsiValue(j, k)
-						+ jacobian.getInvertedJacobianValue(0, 1) * uElem->getEtaValue(j, k);
-
-					dNdy[k] = jacobian.getInvertedJacobianValue(1, 0) * uElem->getKsiValue(j, k)
-						+ jacobian.getInvertedJacobianValue(1, 1) * uElem->getEtaValue(j, k);
-
-					tempInt += initialTemp[k] * uElem->getShapeFunctionValue(k, j);
+			//Volume integration
+			for (size_t j = 0; j < 4; j++) {
+				for (size_t k = 0; k < 4; k++) {
+					localCMatrix.at(j).at(k) += Q * universalElement.getShapeFunctionValue(i, j) * universalElement.getShapeFunctionValue(i, k) * det;
+					localHMatrix.at(j).at(k) += conductivityCoefficient * (dN_dX.at(j) * dN_dX.at(k) + dN_dY.at(j) * dN_dY.at(k)) * det;
+					localPVector.at(j)		 += Q * universalElement.getShapeFunctionValue(i, j) * universalElement.getShapeFunctionValue(i, k) * det * temperatureOverTimeStep;
 				}
+			}
+		}
 
-				det = jacobian.getDeterminant();
+		Surface surface(localElement);
 
-				// N x N^T
-				// Calka objetosciowa do H i C
-				for (int k = 0; k < 4; k++) {
-					for (int l = 0; l < 4; l++) {
+		//Surface integration
+		for (uint16_t elementSurface = 0; elementSurface < localElement.getEdgeCount(); elementSurface++) {
 
-						// C lokalne
-						cLocal[k][l] += heatCapacity * density * uElem->getShapeFunctionValue(j, k) * uElem->getShapeFunctionValue(j, l) * det;
-						// H lokalne
-						hLocal[k][l] += conductivityCoefficient * (dNdx[k] * dNdx[l] + dNdy[k] * dNdy[l]) * det;
-						// Pc lokalnie
-						pLocal[k] += (heatCapacity * density * uElem->getShapeFunctionValue(j, k) * uElem->getShapeFunctionValue(j, l) * det) / timeStep * tempInt;
+			uint16_t surfaceId = localElement.getSurfaceId(elementSurface);
+			double surfaceDet = surface.getSurfaceDeterminant(surfaceId);
+
+			std::array<double, 4> shapeFunction;
+
+			//2 point integration
+			for (int integrationPoint = 0; integrationPoint < 2; integrationPoint++) {
+				shapeFunction = surface.getShapeFunction(surfaceId, integrationPoint);
+
+				for (int j = 0; j < 4; j++) {
+
+					for (int k = 0; k < 4; k++) {
+						localHMatrix.at(j).at(k) += heatExchangeCoefficient * shapeFunction.at(j) * shapeFunction.at(k) * surfaceDet;
 					}
 
+					localPVector.at(j) += heatExchangeCoefficient * shapeFunction.at(j) * surfaceDet * ambientTemperature;
 				}
 			}
-
-			//Calka powierzchniowa do H i wektor P
-			for (int n_surf = 0; n_surf < localElement.getEdgeCount(); n_surf++) {
-
-				//FIXME 
-				uint64_t surface_id = localElement.getEdgeList()[n_surf];
-				double edge_length, surf_det, x_cords[4], y_cords[4], shape_func[4], ksi, eta;
-				// Wspolrzedne elementu skonczonego
-				for (int cords = 0; cords < 4; cords++) {
-					x_cords[cords] = localElement.getNode(cords).getX();
-					y_cords[cords] = localElement.getNode(cords).getY();
-				}
-
-				// Obliczanie dlugosci boku
-				if (surface_id == 1) {
-					edge_length = sqrt(pow((x_cords[1] - x_cords[0]), 2) + pow((y_cords[1] - y_cords[0]), 2));
-				}
-				else if (surface_id == 2) {
-					edge_length = sqrt(pow((x_cords[1] - x_cords[2]), 2) + pow((y_cords[1] - y_cords[2]), 2));
-				}
-				else if (surface_id == 3) {
-					edge_length = sqrt(pow((x_cords[2] - x_cords[3]), 2) + pow((y_cords[2] - y_cords[3]), 2));
-				}
-				else if (surface_id == 4) {
-					edge_length = sqrt(pow((x_cords[3] - x_cords[0]), 2) + pow((y_cords[3] - y_cords[0]), 2));
-				}
-
-				// lokalny wyznacznik macierzy jakobiego
-				surf_det = edge_length / 2.;
-
-				shape_func[0] = 0.;
-				shape_func[1] = 0.;
-				shape_func[2] = 0.;
-				shape_func[3] = 0.;
-
-				// Dla 2 pkt calkowania
-				for (int i_point = 0; i_point < 2; i_point++) {
-					for (int j = 0; j < 4; j++) {
-						for (int k = 0; k < 4; k++) {
-
-
-							// mala zlozonosc cyklomatyczna
-							if (surface_id == 1) {
-								if (i_point == 0) {
-									ksi = -1. / sqrt(3);
-									eta = -1;
-								}
-								else {
-									ksi = 1. / sqrt(3);
-									eta = -1;
-								}
-								// N1 + N2
-								shape_func[0] = 0.25 * (1 - ksi) * (1 - eta);
-								shape_func[1] = 0.25 * (1 + ksi) * (1 - eta);
-								shape_func[2] = 0.;
-								shape_func[3] = 0.;
-							}
-							else if (surface_id == 2) {
-								if (i_point == 0) {
-									ksi = 1;
-									eta = -1. / sqrt(3);
-								}
-								else {
-									ksi = 1;
-									eta = 1. / sqrt(3);
-								}
-								// N2 + //N3
-								shape_func[0] = 0.;
-								shape_func[1] = 0.25 * (1 + ksi) * (1 - eta);
-								shape_func[2] = 0.25 * (1 + ksi) * (1 + eta);
-								shape_func[3] = 0.;
-
-							}
-							else if (surface_id == 3) {
-								if (i_point == 0) {
-									ksi = 1. / sqrt(3);
-									eta = 1;
-								}
-								else {
-									ksi = -1. / sqrt(3);
-									eta = 1;
-								}
-								// N3 + //N4
-								shape_func[0] = 0.;
-								shape_func[1] = 0.;
-								shape_func[2] = 0.25 * (1 + ksi) * (1 + eta);
-								shape_func[3] = 0.25 * (1 - ksi) * (1 + eta);
-							}
-							else {
-								if (i_point == 0) {
-									ksi = -1;
-									eta = 1. / sqrt(3);
-								}
-								else {
-									ksi = -1;
-									eta = -1. / sqrt(3);
-								}
-								// N4 + N1
-								shape_func[0] = 0.25 * (1 - ksi) * (1 - eta);
-								shape_func[1] = 0.;
-								shape_func[2] = 0.;
-								shape_func[3] = 0.25 * (1 - ksi) * (1 + eta);
-							}
-							/*
-
-
-							switch (surface_id) {
-								case 1: {
-									ksi = 1. / sqrt(3);
-									eta = -1;
-									if (i_point == 0) ksi *= -1;
-
-									// N1 + N2
-									shape_func[0] = 0.25 * (1 - ksi) * (1 - eta);
-									shape_func[1] = 0.25 * (1 + ksi) * (1 - eta);
-									shape_func[2] = 0.;
-									shape_func[3] = 0.;
-									break;
-								}
-								case 2: {
-									ksi = 1;
-									eta = 1. / sqrt(3);
-									if (i_point == 0) eta *= -1;
-
-									// N2 + N3
-									shape_func[0] = 0.;
-									shape_func[1] = 0.25 * (1 + ksi) * (1 - eta);
-									shape_func[2] = 0.25 * (1 + ksi) * (1 + eta);
-									shape_func[3] = 0.;
-									break;
-
-								}
-								case 3: {
-									ksi = -1. / sqrt(3);
-									eta = 1;
-									if (i_point == 0) ksi *= -1;
-
-									// N3 + N4
-									shape_func[0] = 0.;
-									shape_func[1] = 0.;
-									shape_func[2] = 0.25 * (1 + ksi) * (1 + eta);
-									shape_func[3] = 0.25 * (1 - ksi) * (1 + eta);
-									break;
-								}
-								default: {
-									ksi = -1;
-									eta = -1. / sqrt(3);
-									if (i_point == 0) eta *= -1;
-									ksi = 1;
-
-									// N4 + N1
-									shape_func[0] = 0.25 * (1 - ksi) * (1 - eta);
-									shape_func[1] = 0.;
-									shape_func[2] = 0.;
-									shape_func[3] = 0.25 * (1 - ksi) * (1 + eta);
-								}
-
-							}*/
-
-							// Macierz H po powierzchni
-							hLocal[j][k] += heatExchangeCoefficient * shape_func[j] * shape_func[k] * surf_det;
-						}
-						pLocal[j] += heatExchangeCoefficient * shape_func[j] * surf_det * ambientTemperature;
-					}
-				}
-			}
-
-			// Agregacja
-			for (int a = 0; a < 4; a++) {
-				for (int b = 0; b < 4; b++) {
-					// Indeks i
-					uint64_t i_index = localElement.getNodeIndex(a);
-					// Indeks j
-					uint64_t j_index = localElement.getNodeIndex(b);
-					// Dodanie do tablic globalnych
-					// Dodawanie do H globalnej
-					m_globalHMatrix[i_index][j_index] += hLocal[a][b];
-					// Dodawanie do C globalnej
-					m_globalCMatrix[i_index][j_index] += cLocal[a][b];
-				}
-				// Dodawanie do P globalnego
-				m_globalPVector[localElement.getNodeIndex(a)] += pLocal[a];
-			}
-
-#ifdef para
 		}
-#endif // para
-#ifndef para
-		}); 
-#endif // !para
 
-	
-	// H + C/dT
+		//Aggregation
+		for (size_t i = 0; i < 4; i++) {
 
-	for (int a = 0; a < m_globalHMatrix.size(); a++) {
-		for (int b = 0; b < m_globalHMatrix.size(); b++) {
-			m_globalHMatrix[a][b] += m_globalCMatrix[a][b] / timeStep;
+			uint64_t globalIndexI = localElement.getNodeIndex(i);
+
+			for (size_t j = 0; j < 4; j++) {
+				uint64_t globalIndexj = localElement.getNodeIndex(j);
+
+				grid.addToGlobalHMatrix(globalIndexI, globalIndexj, localHMatrix.at(i).at(j));
+				grid.addToGlobalCMatrix(globalIndexI, globalIndexj, localCMatrix.at(i).at(j));
+			}
+
+			grid.addToGlobalPVector(globalIndexI, localPVector.at(i));
 		}
 	}
-
-	return;
-	// Wypisywanie tablic
-	bool display_global_matrixes = true;
-	if (display_global_matrixes == true) {
-		std::cout << std::setprecision(2);
-		std::cout << "MACIERZ H+C" << std::endl;
-		for (int a = 0; a < 16; a++) {
-			for (int b = 0; b < 16; b++) {
-				printf("%.3f ",m_globalHMatrix[a][b]);
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-		std::cout << "MACIERZ C" << std::endl;
-		for (int a = 0; a < 16; a++) {
-			for (int b = 0; b < 16; b++) {
-				printf("%.3f ", m_globalCMatrix[a][b]);
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-		std::cout << "WEKTOR P" << std::endl;
-		for (int a = 0; a < 16; a++) {
-			printf("%.3f ", m_globalPVector[a]);
-		}
-		std::cout << std::endl;
-	}
-
-	delete uElem;
-
-
 }
-
-
