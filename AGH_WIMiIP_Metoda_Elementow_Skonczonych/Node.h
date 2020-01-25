@@ -20,15 +20,6 @@ public:
 		m_boundaryCondition = boundaryCondition;
 	}
 
-	Node() {
-		m_x = m_y = 0;
-		m_temp = .0;
-		m_boundaryCondition = 0;
-	}
-	
-	~Node() {
-	}
-
 	double getX() {
 		return m_x;
 	}
