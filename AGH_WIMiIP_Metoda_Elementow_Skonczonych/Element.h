@@ -10,39 +10,22 @@ class Element {
 	std::vector<Node*> m_nodes;
 	uint16_t m_edgeBCCount;
 
-	std::array<uint64_t, 4> m_nodeOrder;
-	std::array<uint64_t, 2> m_edgeBoundaryConditions;
+	std::array<uint64_t, 4> m_nodeOrder = {};
+	std::array<uint16_t, 2> m_edgeBoundaryConditions = {};
 
 public:
 	Element(Node first, Node second, Node third, Node fourth, std::array<uint64_t, 4> nodeOrder) {
-		m_nodes.reserve(4);
-		m_nodes.push_back(&first);
-		m_nodes.push_back(&second);
-		m_nodes.push_back(&third);
-		m_nodes.push_back(&fourth);
+		m_nodes = { &first, &second, &third, &fourth };
 		m_nodeOrder = nodeOrder;
 		m_edgeBCCount = 0;
 	}
 
 	Element(Node * first, Node * second, Node * third, Node * fourth, std::array<uint64_t, 4> nodeOrder) {
-		m_nodes.reserve(4);
-		m_nodes.push_back(first);
-		m_nodes.push_back(second);
-		m_nodes.push_back(third);
-		m_nodes.push_back(fourth);
+		m_nodes = { first, second, third, fourth };
 		m_nodeOrder = nodeOrder;
 		m_edgeBCCount = 0;
 	}
 	
-	Element() {
-		m_nodes.reserve(4);
-		m_nodeOrder = { 0,0,0,0 };
-		m_edgeBCCount = 0;
-	}
-
-	~Element() {
-	}
-
 	Node getNode(size_t index) {
 		return (*m_nodes.at(index));
 	}
@@ -55,11 +38,15 @@ public:
 		return m_nodeOrder.at(localIndex);
 	}
 
-	std::array<uint64_t, 2> getEdgeList() {
+	std::array<uint16_t, 2> getEdgeList() {
 		return m_edgeBoundaryConditions;
 	}
+
+	uint16_t getSurfaceId(uint16_t surface) {
+		return m_edgeBoundaryConditions.at(surface);
+	}
 	
-	void setEdgeListValue(uint64_t index, uint64_t value) {
+	void setEdgeListValue(uint64_t index, uint16_t value) {
 		m_edgeBoundaryConditions.at(index) = value;
 	}
 
